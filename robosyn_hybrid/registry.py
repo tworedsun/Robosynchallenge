@@ -72,10 +72,13 @@ TASK_NAMES: tuple[str, ...] = tuple(TASK_CHECKPOINTS)
 #: ``evaluation_results/released_checkpoint_results.json`` for click_bell,
 #: water_pouring, table_rearrangement, drawer_open_place and mixer_operating;
 #: the remaining four are the head of each repository at the same time.
+#: ``handle_basket`` pins the upload revision of the migrated weights at
+#: ``dimofu/ACT_sim_handle_basket``.
 #:
 #: Pinning matters: an unpinned ``snapshot_download`` silently follows a moving
 #: branch, which would make a re-evaluation non-reproducible.
 TASK_REVISIONS: dict[str, str] = {
+    "handle_basket": "231ec7a8c5d80876636c2445070489b5b9a25e5d",
     "click_bell": "677e65fbb15974024ff840893496197ef7db26d4",
     "water_pouring": "0bf0fcfc931a69c52871385f28068fcf873cf07a",
     "table_rearrangement": "3a46b36fade1772176b791dd87349f479d0a98c8",
@@ -161,10 +164,9 @@ def is_hybrid_task(task_name: str) -> bool:
 def revision_for(task_name: str) -> str | None:
     """Pinned Hub revision for ``task_name``, or ``None`` when unpinned.
 
-    Returns ``None`` for ``handle_basket`` (its migrated repository is not
-    revision-pinned; it is served from ``main``) and for any task without a
-    recorded revision, so callers can fall back to ``main`` with an explicit
-    warning instead of silently tracking a moving branch.
+    Returns ``None`` only for a task without a recorded revision, so callers
+    can fall back to ``main`` with an explicit warning instead of silently
+    tracking a moving branch.
     ``click_bell`` and ``items_handover`` are hybrid tasks *and* have pinned
     revisions, because their hybrid flows load the released checkpoints.
     """

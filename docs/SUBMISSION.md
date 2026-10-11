@@ -188,7 +188,7 @@ handle_basket / click_bell / items_handover 走混合流程(解析阶段 + ACT �
 官方 released checkpoint 做 ACT 阶段(失败时也是纯 ACT 兜底),所以对它们
 HYBRID_CKPT 是可选的;handle_basket 的迁移权重托管在
 `https://huggingface.co/dimofu/ACT_sim_handle_basket`,同样可以省略
-HYBRID_CKPT(显式本地路径仍然优先;上传完成前需先指向本地权重目录)。
+HYBRID_CKPT(显式本地路径仍然优先)。
 items_handover 的解析阶段受官方 gym config 的 350 步(clear 为 300 步)硬约束,
 逐相位预算合计 345 步,预算不足会提前降级为纯 ACT,绝不超步。
 
@@ -201,14 +201,16 @@ for T in handle_basket click_bell water_pouring table_rearrangement \
 done
 # click_bell / items_handover 与另外七个 released 任务可以省掉 HYBRID_CKPT
 # (自动用 registry 里 pinned 的 Hub revision);handle_basket 省略时自动用
-# dimofu/ACT_sim_handle_basket(上传完成前请显式给本地权重目录)。
+# dimofu/ACT_sim_handle_basket。
 
 === PINNED REVISIONS ===
-The nine released checkpoints are pinned in robosyn_hybrid/registry.py. Five of
-them are the exact revisions published in
-evaluation_results/released_checkpoint_results.json, so the run reproduces the
-released baseline rather than a moving branch:
+All ten checkpoints are pinned in robosyn_hybrid/registry.py: the nine released
+official checkpoints, five of which are the exact revisions published in
+evaluation_results/released_checkpoint_results.json, plus the migrated
+handle_basket upload revision. This way the run reproduces the released
+baseline rather than a moving branch:
 
+handle_basket         231ec7a8c5d80876636c2445070489b5b9a25e5d
 click_bell            677e65fbb15974024ff840893496197ef7db26d4
 water_pouring         0bf0fcfc931a69c52871385f28068fcf873cf07a
 table_rearrangement   3a46b36fade1772176b791dd87349f479d0a98c8

@@ -69,11 +69,11 @@ for the full signal-by-signal declaration.
 
 The mapping also lives in code at
 [`robosyn_hybrid/registry.py`](robosyn_hybrid/registry.py) so the two can never
-drift apart silently. Each of the nine released checkpoints is **pinned to a
-commit sha** there, five of which are the exact revisions the organizers
-published in `evaluation_results/released_checkpoint_results.json`, so a
-re-evaluation reproduces the published baseline instead of following a moving
-branch.
+drift apart silently. Every checkpoint is **pinned to a commit sha** there: the
+nine released official checkpoints (five of which are the exact revisions the
+organizers published in `evaluation_results/released_checkpoint_results.json`)
+and the migrated `handle_basket` weights, so a re-evaluation reproduces the
+published baseline instead of following a moving branch.
 
 ---
 
