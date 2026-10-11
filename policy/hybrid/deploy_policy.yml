@@ -1,0 +1,76 @@
+# ------------------------------------------------------------------
+# RoboSynChallenge hybrid policy evaluation configuration
+#   python scripts/eval_policy.py --config policy/hybrid/deploy_policy.yml
+#   preferred: bash policy/hybrid/eval.sh <task_name> <setting> [model_name] [gpu_id]
+#
+# Every key is either consumed by scripts/eval_policy.py itself or passed
+# verbatim to policy/hybrid/deploy_policy.py:get_model(usr_args=config).
+# Comments were added for documentation; the key/value block is unchanged
+# from the submission spec.
+# ------------------------------------------------------------------
+
+# --- experiment identity (required by eval_policy.py) ---
+# adapter package to import: policy/<policy_name>/ must export
+# get_model / eval / reset_model from its top-level namespace
+policy_name: hybrid
+# task under evaluation (one of the ten RoboSynChallenge simulation tasks)
+task_name: handle_basket
+# randomization split of the task (random | clear); selects
+# configs/<task_name>/<setting>/gym_config.json
+setting: random
+# run label used in eval_result/<task>/<policy>/<setting>/.../<model_name>/
+model_name: hybrid_v1
+# RNG seed used to draw per-episode seeds
+seed: 0
+# number of evaluated episodes
+max_episodes: 100
+# episode step budget (fallback used when gym_config.json does not declare
+# max_episode_steps); also handed to the hybrid flow as its step limit
+max_steps: 500
+# run the simulator without a viewer
+headless: true
+# torch device for ACT inference (falls back to cpu when CUDA is unavailable)
+pytorch_device: cuda
+# do not persist simulator datasets while evaluating
+filter_dataset_saving: true
+# record one mp4 per episode (frames of eval_video_obs_keys concatenated
+# horizontally). Kept ON for submissions so every episode leaves evidence.
+eval_video_log: true
+# which RGB streams to record; each episode becomes episode_NNN_seed_S.mp4
+eval_video_obs_keys:
+  - cam_high
+  - cam_left_wrist
+  - cam_right_wrist
+# where metrics + videos are written. Defaults to ./eval_result (cwd), which on
+# the evaluation machine may be a small overlay volume -- point it at a scratch
+# path with room if needed.
+# eval_result_dir: /path/to/scratch/eval_result
+# run the official expert-feasibility seed filter before each episode
+eval_expert_check: true
+
+# --- hybrid flows (handle_basket and click_bell) ---
+# master switch: false forces the pure-ACT path even for a hybrid task
+hybrid_enabled: true
+# number of ACT chunks the flow executes after the analytic stages
+# (handle_basket: after the grasp phases; click_bell: recorded for the summary —
+#  its ACT fill runs from the remaining episode budget)
+hybrid_act_chunks: 6
+# ACT action-chunk length (n_action_steps) used by the ACT wrapper
+hybrid_act_step: 50
+# local ACT checkpoint directory; null means eval.sh fills it in from the
+# HYBRID_CKPT environment variable.
+#   handle_basket: no Hub checkpoint (in-repo weights are required), so a
+#                  checkpoint path must be supplied.
+#   click_bell:    the hybrid flow reuses the official released checkpoint
+#                  RoboSynChallenge/ACT_sim_click_bell (pinned revision in
+#                  robosyn_hybrid/registry.py) for its ACT fill phase; the
+#                  adapter downloads it when no path is given.
+#   the other eight tasks: same as click_bell, released Hub checkpoints.
+checkpoint_path: null          # 由 eval.sh --overrides 指定
+#
+# NOTE ON STEP BUDGETS: `max_steps` above is only the fallback used when the
+# official gym_config.json does not declare `max_episode_steps`. The adapter
+# passes a per-task default to the flow when `max_steps` is absent from the
+# overrides: handle_basket 500, click_bell 361 (the official click_bell
+# max_episode_steps). `ClickBellFlow` also hard-caps its internal moves so the
+# environment budget is never exceeded.

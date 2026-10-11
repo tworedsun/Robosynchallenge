@@ -1,0 +1,42 @@
+# FoundationStereo 推理 venv 的最小依赖(WS-A / fs_infer.py)
+#
+# 这个 venv 只给 `robosyn_hybrid/fs_infer.py` 用(单次推理 + `--serve` 常驻
+# worker),刻意不含 open3d / jupyter / 训练相关依赖,尽可能轻。
+#
+# 版本取自 FoundationStereo 官方的 environment.yml(python 3.11 环境)。
+# 安装方式:bash scripts/setup_fs_env.sh venv
+#
+# torch 系建议走 PyTorch 官方索引(需要匹配本机 CUDA):
+#   FS_TORCH_INDEX_URL=https://download.pytorch.org/whl/cu124 \
+#     bash scripts/setup_fs_env.sh venv
+# CPU-only 机器可以设 FS_TORCH_INDEX_URL="" 走默认 PyPI(会很慢)。
+
+# --- 深度学习运行时 ---
+torch==2.4.1
+torchvision==0.19.1
+torchaudio==2.4.1
+timm
+einops
+xformers==0.0.28.post1; platform_system == "Linux" and platform_machine == "x86_64"
+
+# --- 配置 / 图像 IO ---
+omegaconf
+imageio
+opencv-contrib-python
+numpy
+scipy
+scikit-image
+scikit-learn
+scikit-build
+ninja
+pyyaml
+ruamel.yaml
+
+# --- FoundationStereo 代码里用到的其余依赖 ---
+albumentations
+imgaug
+joblib
+transformations
+trimesh
+gdown
+huggingface-hub

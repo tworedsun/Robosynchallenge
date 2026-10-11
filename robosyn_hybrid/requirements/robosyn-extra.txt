@@ -1,0 +1,30 @@
+# Extra Python packages the hybrid submission needs on top of the official
+# RoboSynChallenge / EmbodiChain environment.
+#
+# Install into the SAME environment used to run scripts/eval_policy.py:
+#     pip install -r requirements/robosyn-extra.txt
+#
+# FoundationStereo is NOT listed here on purpose: its CUDA extensions conflict
+# with the simulator environment, so it lives in its own environment built by
+# scripts/setup_fs_env.sh (see requirements/foundationstereo.txt).
+
+# --- observation / perception glue -----------------------------------------
+pillow>=10.0            # in-memory PNG encoding for the VLM data URLs
+opencv-python>=4.8      # rectification / warpPerspective in the stereo path
+
+# --- SAM2.1 mask refinement ------------------------------------------------
+# Provides `from ultralytics import SAM`, which is how the policy loads
+# sam2.1_t.pt. Verified against the checkpoint hash in scripts/download_assets.sh.
+ultralytics>=8.3.0
+
+# --- OpenAI-compatible VLM client ------------------------------------------
+requests>=2.31
+
+# --- fetching the official ACT checkpoints for the other nine tasks ---------
+huggingface_hub>=0.35
+
+# --- already provided by the official environment, listed for clarity ------
+# torch>=2.7.0
+# torchvision>=0.22.0
+# numpy>=1.26,<2
+# lerobot==0.4.4

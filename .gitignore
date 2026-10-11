@@ -1,0 +1,22 @@
+# Downloaded third-party weights (never commit these)
+robosyn_hybrid_assets/
+*.pt
+*.pth
+*.gguf
+*.safetensors
+
+# Local virtualenvs
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Runtime scratch
+eval_result/
+outputs/
+*.log
+.DS_Store

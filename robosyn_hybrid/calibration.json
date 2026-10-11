@@ -1,0 +1,25 @@
+{
+  "_comment": "Public camera parameters copied from the official RoboSynChallenge repository (configs/handle_basket/random/gym_config.json). No simulator state is read at runtime; these constants are the released public calibration.",
+  "_source": "https://github.com/EDEM-AI/RoboSynChallenge/blob/main/configs/handle_basket/random/gym_config.json",
+  "image_size": [480, 640],
+  "cameras": {
+    "cam_high": {
+      "intrinsics": [606.315186, 606.100952, 320.549316, 245.877106],
+      "parent": null,
+      "pos": null,
+      "quat": null
+    },
+    "cam_left_wrist": {
+      "intrinsics": [603.117004394531, 602.418640136719, 326.727478027344, 251.933990478516],
+      "parent": "left_link6",
+      "pos": [-0.12, 0.01, 0.03],
+      "quat": [0.1949, 0.6797, -0.6797, -0.1949]
+    },
+    "cam_right_wrist": {
+      "intrinsics": [603.117004394531, 602.418640136719, 326.727478027344, 251.933990478516],
+      "parent": "right_link6",
+      "pos": [-0.12, 0.01, 0.03],
+      "quat": [0.1949, 0.6797, -0.6797, -0.1949]
+    }
+  }
+}
