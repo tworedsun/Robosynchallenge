@@ -88,7 +88,8 @@ TASK_REVISIONS: dict[str, str] = {
 }
 
 #: Tasks served by an in-repo hybrid flow (analytic stage + ACT hand-over).
-#: ``handle_basket`` has no Hub checkpoint of its own; ``click_bell`` reuses the
+#: ``handle_basket`` now also has a Hub checkpoint (dimofu/ACT_sim_handle_basket);
+#: ``click_bell`` reuses the
 #: official released checkpoint for its ACT fill phase, which is why this set is
 #: declared explicitly instead of being derived from ``TASK_CHECKPOINTS``.
 #: ``items_handover`` **is** a hybrid task again.  It was briefly switched to
