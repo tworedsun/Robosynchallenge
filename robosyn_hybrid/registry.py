@@ -5,9 +5,9 @@ submission.  Seven of them are served by the released baseline ACT checkpoints
 published under the ``RoboSynChallenge`` Hugging Face organisation; the other
 three are served by this repository's hybrid flows:
 
-* ``handle_basket`` (depth + VLM + SAM2 + grasp + ACT takeover) ships its own
-  ACT weights, so it is addressed by an explicit local ``checkpoint_path``
-  instead of a Hub repository id;
+* ``handle_basket`` (depth + VLM + SAM2 + grasp + ACT takeover) uses the
+  migrated ACT weights hosted at ``dimofu/ACT_sim_handle_basket``; an explicit
+  local ``checkpoint_path`` (``HYBRID_CKPT``) still overrides it;
 * ``click_bell`` (motion-stereo depth + VLM button localisation + FK/IK press +
   ACT fill) keeps the **official** released checkpoint
   ``RoboSynChallenge/ACT_sim_click_bell``: the hybrid flow takes over the press
@@ -44,11 +44,13 @@ __all__ = [
     "describe_registry",
 ]
 
-#: ``task_name -> Hub repository id``.  ``None`` means "this task is served by
-#: the in-repo hybrid flow and therefore requires an explicit checkpoint path
-#: (``--checkpoint_path`` / ``HYBRID_CKPT``)".
+#: ``task_name -> Hub repository id``.  Every task resolves to a Hub
+#: repository; an explicit ``--checkpoint_path`` / ``HYBRID_CKPT`` still wins
+#: over the registered entry.  The defensive ``None`` branch in
+#: :func:`checkpoint_for` is kept in case a task is ever re-pointed at
+#: in-repo weights.
 TASK_CHECKPOINTS: dict[str, str | None] = {
-    "handle_basket": None,
+    "handle_basket": "dimofu/ACT_sim_handle_basket",
     "click_bell": "RoboSynChallenge/ACT_sim_click_bell",
     "water_pouring": "RoboSynChallenge/ACT_sim_water_pouring",
     "table_rearrangement": "RoboSynChallenge/ACT_sim_table_rearrangement",
@@ -117,12 +119,12 @@ def checkpoint_for(task_name: str, override: str | None = None) -> str:
     """Return the checkpoint to load for ``task_name``.
 
     ``override`` (typically ``usr_args["checkpoint_path"]``) always wins when it
-    is a non-empty string.  Otherwise the registry entry is used, and a
-    ``ValueError`` is raised when that entry is ``None`` -- that only happens
-    for ``handle_basket``, whose weights are shipped with this repository and
-    must be pointed at explicitly.  ``click_bell`` and ``items_handover`` keep
-    their official released repository ids, which their hybrid flows' ACT
-    phases (and pure-ACT fallbacks) reuse.
+    is a non-empty string.  Otherwise the registry entry is used; every task
+    resolves to a Hub repository id -- ``handle_basket`` to its migrated
+    ``dimofu/ACT_sim_handle_basket`` weights, and ``click_bell`` /
+    ``items_handover`` to their official released repository ids, which their
+    hybrid flows' ACT phases (and pure-ACT fallbacks) reuse.  A ``ValueError``
+    is only raised for unknown tasks or a defensive ``None`` entry.
     """
     if override is not None and str(override).strip():
         return str(override)
@@ -158,9 +160,10 @@ def is_hybrid_task(task_name: str) -> bool:
 def revision_for(task_name: str) -> str | None:
     """Pinned Hub revision for ``task_name``, or ``None`` when unpinned.
 
-    Returns ``None`` for ``handle_basket`` (its weights are local) and for any
-    task without a recorded revision, so callers can fall back to ``main`` with
-    an explicit warning instead of silently tracking a moving branch.
+    Returns ``None`` for ``handle_basket`` (its migrated repository is not
+    revision-pinned; it is served from ``main``) and for any task without a
+    recorded revision, so callers can fall back to ``main`` with an explicit
+    warning instead of silently tracking a moving branch.
     ``click_bell`` and ``items_handover`` are hybrid tasks *and* have pinned
     revisions, because their hybrid flows load the released checkpoints.
     """
@@ -188,7 +191,7 @@ def checkpoint_url_for(task_name: str) -> str | None:
     RoboSynChallenge submission backend requires an
     ``https://huggingface.co/...`` link.  The two must not be confused, so the
     conversion lives here instead of being re-derived by callers.
-    Returns ``None`` for ``handle_basket``, whose weights are hosted separately.
+    Every registered task resolves to a URL.
     """
     repo_id = TASK_CHECKPOINTS.get(task_name)
     if repo_id is None:

@@ -85,8 +85,8 @@ if (!/^https:\/\/huggingface\.co\//i.test(text)) throw new Error("Checkpoint lin
 | 字段 | 填什么 |
 | --- | --- |
 | Base model name | `RoboSynChallenge hybrid ACT adapter (handle_basket + click_bell + items_handover hybrid flows + official ACT baselines)` |
-| Checkpoint link | `https://huggingface.co/<你的HF用户名>/ACT_sim_handle_basket` |
-| Code link | `https://github.com/<你的GitHub用户名>/robosynchallenge-hybrid-submission` |
+| Checkpoint link | `https://huggingface.co/dimofu/ACT_sim_handle_basket` |
+| Code link | `https://github.com/tworedsun/Robosynchallenge` |
 
 **不注册 base model 就无法提交评测。**
 
@@ -103,8 +103,8 @@ if (!/^https:\/\/huggingface\.co\//i.test(text)) throw new Error("Checkpoint lin
 | `artifact_name` | `robosynchallenge-hybrid-submission` |
 | `title` | `Hybrid analytic flows (handle_basket, click_bell, items_handover) + official ACT baselines for the other seven tasks` |
 | `short_description` | 见下方 §3.1 |
-| `code_link` | `https://github.com/<你的GitHub用户名>/robosynchallenge-hybrid-submission` |
-| `checkpoint_link` | `https://huggingface.co/<你的HF用户名>/ACT_sim_handle_basket` |
+| `code_link` | `https://github.com/tworedsun/Robosynchallenge` |
+| `checkpoint_link` | `https://huggingface.co/dimofu/ACT_sim_handle_basket` |
 | `data_source_text` | 见下方 §3.2 |
 | `technical_notes` | 见下方 §3.3 |
 | `all_tasks_confirmed` | ✅ 勾选 |
@@ -164,7 +164,7 @@ RoboSynChallenge repository:
 
 === INSTALL ===
 cd RoboSynChallenge
-git clone https://github.com/<你的GitHub用户名>/robosynchallenge-hybrid-submission /tmp/hybrid
+git clone https://github.com/tworedsun/Robosynchallenge /tmp/hybrid
 cp -r /tmp/hybrid/policy/hybrid policy/
 cp -r /tmp/hybrid/robosyn_hybrid .
 bash robosyn_hybrid/scripts/download_assets.sh      # SAM2.1 + FoundationStereo weights
@@ -172,7 +172,7 @@ bash robosyn_hybrid/scripts/run_vlm_server.sh &     # self-hosted VLM, prints HY
 export HYBRID_VLM_URL=http://127.0.0.1:11434/v1/chat/completions
 
 === TASK -> CHECKPOINT MAP ===
-handle_basket         https://huggingface.co/<你的HF用户名>/ACT_sim_handle_basket
+handle_basket         https://huggingface.co/dimofu/ACT_sim_handle_basket
 click_bell            https://huggingface.co/RoboSynChallenge/ACT_sim_click_bell
 water_pouring         https://huggingface.co/RoboSynChallenge/ACT_sim_water_pouring
 table_rearrangement   https://huggingface.co/RoboSynChallenge/ACT_sim_table_rearrangement
@@ -186,7 +186,9 @@ sample_loading        https://huggingface.co/RoboSynChallenge/ACT_sim_sample_loa
 handle_basket / click_bell / items_handover 走混合流程(解析阶段 + ACT 接管/填充),
 其余七个任务为纯 ACT。click_bell 与 items_handover 的混合流程都复用上表各自那个
 官方 released checkpoint 做 ACT 阶段(失败时也是纯 ACT 兜底),所以对它们
-HYBRID_CKPT 是可选的;handle_basket 自带权重,必须提供。
+HYBRID_CKPT 是可选的;handle_basket 的迁移权重托管在
+`https://huggingface.co/dimofu/ACT_sim_handle_basket`,同样可以省略
+HYBRID_CKPT(显式本地路径仍然优先;上传完成前需先指向本地权重目录)。
 items_handover 的解析阶段受官方 gym config 的 350 步(clear 为 300 步)硬约束,
 逐相位预算合计 345 步,预算不足会提前降级为纯 ACT,绝不超步。
 
@@ -198,7 +200,8 @@ for T in handle_basket click_bell water_pouring table_rearrangement \
   bash policy/hybrid/eval.sh "$T" random "hybrid_${T}" 0
 done
 # click_bell / items_handover 与另外七个 released 任务可以省掉 HYBRID_CKPT
-# (自动用 registry 里 pinned 的 Hub revision);handle_basket 必须给。
+# (自动用 registry 里 pinned 的 Hub revision);handle_basket 省略时自动用
+# dimofu/ACT_sim_handle_basket(上传完成前请显式给本地权重目录)。
 
 === PINNED REVISIONS ===
 The nine released checkpoints are pinned in robosyn_hybrid/registry.py. Five of
@@ -247,7 +250,7 @@ remaining nine tasks and the ACT fallback are unaffected by a partial
 environment.
 ```
 
-> ⚠️ 把 `<你的GitHub用户名>` / `<你的HF用户名>` 替换成真实值。提交前请**逐条核对 10 个 HF 仓库名**(可用 `https://hf-mirror.com/api/models/RoboSynChallenge/ACT_sim_<task>` 验证返回 200)。
+> ⚠️ 提交前请**逐条核对 10 个 HF 仓库名**(可用 `https://hf-mirror.com/api/models/RoboSynChallenge/ACT_sim_<task>` 验证返回 200;handle_basket 对应 `https://huggingface.co/dimofu/ACT_sim_handle_basket`)。
 
 ---
 

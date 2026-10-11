@@ -23,7 +23,7 @@
 
 ```bash
 cd /path/to/RoboSynChallenge
-git clone https://github.com/tworedsun/robosynchallenge-hybrid-submission /tmp/hybrid
+git clone https://github.com/tworedsun/Robosynchallenge /tmp/hybrid
 
 cp -r /tmp/hybrid/policy/hybrid    policy/
 cp -r /tmp/hybrid/robosyn_hybrid   .

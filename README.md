@@ -35,7 +35,7 @@ for the full signal-by-signal declaration.
 
 | Task | Checkpoint | How it runs |
 | --- | --- | --- |
-| `handle_basket` | `https://huggingface.co/tworedsun/ACT_sim_handle_basket` | hybrid flow + ACT fill |
+| `handle_basket` | `https://huggingface.co/dimofu/ACT_sim_handle_basket` | hybrid flow + ACT fill |
 | `click_bell` | `https://huggingface.co/RoboSynChallenge/ACT_sim_click_bell` | hybrid flow + ACT fill |
 | `water_pouring` | `https://huggingface.co/RoboSynChallenge/ACT_sim_water_pouring` | pure ACT |
 | `table_rearrangement` | `https://huggingface.co/RoboSynChallenge/ACT_sim_table_rearrangement` | pure ACT |
@@ -46,11 +46,10 @@ for the full signal-by-signal declaration.
 | `manipulate_pipette` | `https://huggingface.co/RoboSynChallenge/ACT_sim_manipulate_pipette` | pure ACT |
 | `sample_loading` | `https://huggingface.co/RoboSynChallenge/ACT_sim_sample_loading` | pure ACT |
 
-> Replace `tworedsun` with the account that hosts the migrated checkpoint. The
-> handle_basket checkpoint is the released official ACT weights re-packaged in
-> the **LeRobot 0.4.4** layout; no additional training was performed. The
-> migration and the normalisation-key pitfall it works around are documented in
-> the model card of that repository.
+> The handle_basket checkpoint is hosted at
+> `https://huggingface.co/dimofu/ACT_sim_handle_basket`. It is the released
+> official ACT weights re-packaged in the **LeRobot 0.4.4** layout; no
+> additional training was performed.
 >
 > `click_bell` and `items_handover` keep their **official** released
 > checkpoints: their hybrid flows
@@ -89,10 +88,9 @@ Requires the official RoboSynChallenge environment (EmbodiChain + PyTorch 2.7 +
 
 # 2. drop this repository's payload into the official checkout
 cd /path/to/RoboSynChallenge
-git clone https://github.com/tworedsun/robosynchallenge-hybrid-submission /tmp/hybrid
+git clone https://github.com/tworedsun/Robosynchallenge /tmp/hybrid
 cp -r /tmp/hybrid/policy/hybrid   policy/
 cp -r /tmp/hybrid/robosyn_hybrid  .
-cp -r /tmp/hybrid/scripts         robosyn_hybrid/scripts
 
 # 3. extra Python packages (SAM2 loader, VLM client, HF hub)
 pip install -r robosyn_hybrid/requirements/robosyn-extra.txt
@@ -135,9 +133,9 @@ done
 
 `HYBRID_CKPT` may be a local directory or a Hugging Face repo id; when it is
 omitted the adapter falls back to the checkpoint registered in
-`robosyn_hybrid/registry.py`. That fallback works for `click_bell`,
-`items_handover` and the other seven released checkpoints; `handle_basket` ships
-its own weights (point `HYBRID_CKPT` at them, or at the repo id that hosts them).
+`robosyn_hybrid/registry.py`. That fallback works for all ten tasks — for
+`handle_basket` it resolves to the migrated `dimofu/ACT_sim_handle_basket`
+repository, and an explicit local checkpoint directory still wins over it.
 
 ### Environment switches
 
