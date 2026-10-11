@@ -187,7 +187,7 @@ handle_basket / click_bell / items_handover 走混合流程(解析阶段 + ACT �
 其余七个任务为纯 ACT。click_bell 与 items_handover 的混合流程都复用上表各自那个
 官方 released checkpoint 做 ACT 阶段(失败时也是纯 ACT 兜底),所以对它们
 HYBRID_CKPT 是可选的;handle_basket 的迁移权重托管在
-`https://huggingface.co/dimofu/ACT_sim_handle_basket`,同样可以省略
+https://huggingface.co/dimofu/ACT_sim_handle_basket,同样可以省略
 HYBRID_CKPT(显式本地路径仍然优先)。
 items_handover 的解析阶段受官方 gym config 的 350 步(clear 为 300 步)硬约束,
 逐相位预算合计 345 步,预算不足会提前降级为纯 ACT,绝不超步。
@@ -197,7 +197,7 @@ for T in handle_basket click_bell water_pouring table_rearrangement \
          drawer_open_place mixer_operating items_handover item_assembly \
          manipulate_pipette sample_loading; do
   HYBRID_CKPT=<local path or HF repo id for that task> \
-  bash policy/hybrid/eval.sh "$T" random "hybrid_${T}" 0
+  bash policy/hybrid/eval.sh "$T" random "hybrid_$T" 0
 done
 # click_bell / items_handover 与另外七个 released 任务可以省掉 HYBRID_CKPT
 # (自动用 registry 里 pinned 的 Hub revision);handle_basket 省略时自动用
@@ -222,7 +222,7 @@ manipulate_pipette    ca013b2e202d594bf347530c61c3ba28c06d1bc2
 sample_loading        917bf2796f18abd0a16f723573382161f1a5c5c8
 
 === PROTOCOL ===
-Task:                 all ten official task names, setting `random`
+Task:                 all ten official task names, setting random
 Observation state:    14-dim joint positions + gripper
 Observation images:   cam_high, cam_left_wrist, cam_right_wrist (RGB only)
 Action output:        14-dim absolute joint positions + gripper
@@ -235,7 +235,7 @@ Inference timing:     official policy/inference_timing.py boundary (env.step exc
   * Official RoboSynChallenge conda environment (PyTorch 2.7.0+cu128, Python 3.11).
   * lerobot 0.4.4 (the released ACT checkpoints are migrated to this layout).
   * A self-hosted OpenAI-compatible VLM endpoint, started by
-    robosyn_hybrid/scripts/run_vlm_server.sh. `HYBRID_VLM_URL` may also point at
+    robosyn_hybrid/scripts/run_vlm_server.sh. HYBRID_VLM_URL may also point at
     any compatible server. If it is unset, the handle_basket pipeline degrades
     to the plain ACT path automatically.
   * FoundationStereo runs in its own environment to keep its CUDA extensions
