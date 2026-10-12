@@ -153,7 +153,7 @@ No official real data was used. No non-official data was used for training.
 ### 3.3 `technical_notes`(最重要的一段,必须含 10 任务映射与运行命令)
 
 ```
-=== ENTRYPOINTS ===
+ENTRYPOINTS:
 All ten tasks use one adapter, installed as policy/hybrid/ in the official
 RoboSynChallenge repository:
 
@@ -162,7 +162,7 @@ RoboSynChallenge repository:
     <repo>/policy/hybrid/deploy_policy.yml
     <repo>/policy/hybrid/eval.sh
 
-=== INSTALL ===
+INSTALL:
 cd RoboSynChallenge
 git clone https://github.com/tworedsun/Robosynchallenge /tmp/hybrid
 cp -r /tmp/hybrid/policy/hybrid policy/
@@ -171,7 +171,7 @@ bash robosyn_hybrid/scripts/download_assets.sh      # SAM2.1 + FoundationStereo 
 bash robosyn_hybrid/scripts/run_vlm_server.sh &     # self-hosted VLM, prints HYBRID_VLM_URL
 export HYBRID_VLM_URL=http://127.0.0.1:11434/v1/chat/completions
 
-=== TASK -> CHECKPOINT MAP ===
+TASK -> CHECKPOINT MAP:
 handle_basket         https://huggingface.co/dimofu/ACT_sim_handle_basket
 click_bell            https://huggingface.co/RoboSynChallenge/ACT_sim_click_bell
 water_pouring         https://huggingface.co/RoboSynChallenge/ACT_sim_water_pouring
@@ -203,7 +203,7 @@ done
 # (自动用 registry 里 pinned 的 Hub revision);handle_basket 省略时自动用
 # dimofu/ACT_sim_handle_basket。
 
-=== PINNED REVISIONS ===
+PINNED REVISIONS:
 All ten checkpoints are pinned in robosyn_hybrid/registry.py: the nine released
 official checkpoints, five of which are the exact revisions published in
 evaluation_results/released_checkpoint_results.json, plus the migrated
@@ -221,7 +221,7 @@ item_assembly         58955958519157176712a1eff319018d78177ddb
 manipulate_pipette    ca013b2e202d594bf347530c61c3ba28c06d1bc2
 sample_loading        917bf2796f18abd0a16f723573382161f1a5c5c8
 
-=== PROTOCOL ===
+PROTOCOL:
 Task:                 all ten official task names, setting random
 Observation state:    14-dim joint positions + gripper
 Observation images:   cam_high, cam_left_wrist, cam_right_wrist (RGB only)
@@ -231,7 +231,7 @@ execution_chunk_size: 50
 gripper_threshold:    0.05
 Inference timing:     official policy/inference_timing.py boundary (env.step excluded)
 
-=== ENVIRONMENT / DEPENDENCIES ===
+ENVIRONMENT / DEPENDENCIES:
   * Official RoboSynChallenge conda environment (PyTorch 2.7.0+cu128, Python 3.11).
   * lerobot 0.4.4 (the released ACT checkpoints are migrated to this layout).
   * A self-hosted OpenAI-compatible VLM endpoint, started by
@@ -244,7 +244,7 @@ Inference timing:     official policy/inference_timing.py boundary (env.step exc
   * SAM2.1 (sam2.1_t.pt) for mask refinement, downloaded by
     robosyn_hybrid/scripts/download_assets.sh.
 
-=== FAILURE BEHAVIOUR ===
+FAILURE BEHAVIOUR:
 Every stage of the handle_basket pipeline is wrapped: if the VLM endpoint, the
 stereo depth model or the IK search is unavailable, the adapter logs the reason
 and continues with the plain ACT path instead of aborting the episode, so the
