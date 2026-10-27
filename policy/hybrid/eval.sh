@@ -89,7 +89,7 @@ if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
     exit 1
 fi
 
-export PYTHONPATH="$REPO_ROOT:$REPO_ROOT/policy${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="$REPO_ROOT:$REPO_ROOT/policy:$REPO_ROOT/policy/hybrid${PYTHONPATH:+:$PYTHONPATH}"
 if [[ -d "$EMBODICHAIN_ROOT" ]]; then
     export PYTHONPATH="$EMBODICHAIN_ROOT:$PYTHONPATH"
 fi

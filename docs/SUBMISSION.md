@@ -166,9 +166,10 @@ INSTALL:
 cd RoboSynChallenge
 git clone https://github.com/tworedsun/Robosynchallenge /tmp/hybrid
 cp -r /tmp/hybrid/policy/hybrid policy/
-cp -r /tmp/hybrid/robosyn_hybrid .
-bash robosyn_hybrid/scripts/download_assets.sh      # SAM2.1 + FoundationStereo weights
-bash robosyn_hybrid/scripts/run_vlm_server.sh &     # self-hosted VLM, prints HYBRID_VLM_URL
+# All runtime code ships inside policy/hybrid/ (including robosyn_hybrid/);
+# nothing else needs to be copied.
+bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh      # SAM2.1 + FoundationStereo weights
+bash policy/hybrid/robosyn_hybrid/scripts/run_vlm_server.sh &     # self-hosted VLM, prints HYBRID_VLM_URL
 export HYBRID_VLM_URL=http://127.0.0.1:11434/v1/chat/completions
 
 TASK -> CHECKPOINT MAP:
@@ -192,7 +193,7 @@ HYBRID_CKPT(显式本地路径仍然优先)。
 items_handover 的解析阶段受官方 gym config 的 350 步(clear 为 300 步)硬约束,
 逐相位预算合计 345 步,预算不足会提前降级为纯 ACT,绝不超步。
 
-### RUN COMMANDS (all ten tasks) ===
+RUN COMMANDS (all ten tasks):
 for T in handle_basket click_bell water_pouring table_rearrangement \
          drawer_open_place mixer_operating items_handover item_assembly \
          manipulate_pipette sample_loading; do
@@ -204,7 +205,7 @@ done
 # dimofu/ACT_sim_handle_basket。
 
 PINNED REVISIONS:
-All ten checkpoints are pinned in robosyn_hybrid/registry.py: the nine released
+All ten checkpoints are pinned in policy/hybrid/robosyn_hybrid/registry.py: the nine released
 official checkpoints, five of which are the exact revisions published in
 evaluation_results/released_checkpoint_results.json, plus the migrated
 handle_basket upload revision. This way the run reproduces the released
@@ -235,14 +236,14 @@ ENVIRONMENT / DEPENDENCIES:
   * Official RoboSynChallenge conda environment (PyTorch 2.7.0+cu128, Python 3.11).
   * lerobot 0.4.4 (the released ACT checkpoints are migrated to this layout).
   * A self-hosted OpenAI-compatible VLM endpoint, started by
-    robosyn_hybrid/scripts/run_vlm_server.sh. HYBRID_VLM_URL may also point at
+    policy/hybrid/robosyn_hybrid/scripts/run_vlm_server.sh. HYBRID_VLM_URL may also point at
     any compatible server. If it is unset, the handle_basket pipeline degrades
     to the plain ACT path automatically.
   * FoundationStereo runs in its own environment to keep its CUDA extensions
-    away from the simulator environment; robosyn_hybrid/scripts/setup_fs_env.sh
+    away from the simulator environment; policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh
     builds it and FS_PYTHON points at it.
   * SAM2.1 (sam2.1_t.pt) for mask refinement, downloaded by
-    robosyn_hybrid/scripts/download_assets.sh.
+    policy/hybrid/robosyn_hybrid/scripts/download_assets.sh.
 
 FAILURE BEHAVIOUR:
 Every stage of the handle_basket pipeline is wrapped: if the VLM endpoint, the

@@ -90,7 +90,7 @@ L1 实测均回到 ``wxyz/post_flip`` 且位置误差 < 2 mm、旋转误差 < 0.
        from robosyn_hybrid.stereo import verify_mount
        print(verify_mount(env, "left"))
 
-   重测入口是 ``python robosyn_hybrid/scripts/verify_clickbell_geometry.py``
+   重测入口是 ``python policy/hybrid/robosyn_hybrid/scripts/verify_clickbell_geometry.py``
    的 L1 层;返回的 ``candidates`` / ``measured_mount`` / ``warnings`` 应与
    ``docs/COMPLIANCE.md`` §2.5 的记录一致。``verify_mount`` 只记录差异、
    从不抛错,并且在合规模式下(不访问 ``env.sensors``)会直接回报
@@ -654,7 +654,7 @@ def _fs_worker_call(payload: dict, socket_path: Path, timeout_s: float) -> dict 
 
 
 def _fs_subprocess(payload: dict, ckpt: str, timeout_s: float) -> None:
-    """子进程回退:``settings.fs_python`` 跑 ``robosyn_hybrid/fs_infer.py``。"""
+    """子进程回退:``settings.fs_python`` 跑 ``policy/hybrid/robosyn_hybrid/fs_infer.py``。"""
     settings = get_settings()
     cmd = [
         str(settings.fs_python),
@@ -713,7 +713,7 @@ def run_fs(
     """对校正后的立体像对跑 FoundationStereo。
 
     优先走 ``settings.fs_socket`` 常驻 worker(见 ``fs_infer.py --serve``),
-    失败则回退到 ``settings.fs_python`` + ``robosyn_hybrid/fs_infer.py`` 子进程。
+    失败则回退到 ``settings.fs_python`` + ``policy/hybrid/robosyn_hybrid/fs_infer.py`` 子进程。
     中间文件全部落在 :mod:`tempfile` 创建的目录里。
 
     返回 ``(disparity, depth, valid)``。
@@ -768,7 +768,7 @@ def _warn_if_fs_missing() -> None:
     if not settings.fs_ckpt.is_file():
         warnings.warn(
             f"FoundationStereo checkpoint not found at {settings.fs_ckpt}; set FS_CKPT "
-            "or FS_ROOT (and run robosyn_hybrid/scripts/setup_fs_env.sh). A running worker may still "
+            "or FS_ROOT (and run policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh). A running worker may still "
             "serve requests with its own FS_STEREO_CKPT.",
             stacklevel=2,
         )

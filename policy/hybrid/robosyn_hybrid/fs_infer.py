@@ -10,7 +10,7 @@
 * 不再出现任何硬编码的绝对路径,也不再有写死的解释器 / venv 位置。
 
 刻意不依赖 open3d,只需要一个轻量 venv(见
-``robosyn_hybrid/requirements/foundationstereo.txt`` 与 ``robosyn_hybrid/scripts/setup_fs_env.sh``)。
+``policy/hybrid/robosyn_hybrid/requirements/foundationstereo.txt`` 与 ``policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh``)。
 
 CLI(SPEC §2.4)::
 
@@ -58,8 +58,8 @@ _PKG_DIR = Path(__file__).resolve().parent
 def _ensure_package_importable() -> None:
     """让 ``robosyn_hybrid.settings`` 在"当脚本跑"时也能 import。
 
-    直接 ``python robosyn_hybrid/fs_infer.py`` 时 ``sys.path[0]`` 是
-    ``robosyn_hybrid/`` 本身,包根需要手动补上。
+    直接 ``python policy/hybrid/robosyn_hybrid/fs_infer.py`` 时 ``sys.path[0]`` 是
+    ``policy/hybrid/robosyn_hybrid/`` 本身,包根需要手动补上。
     """
     package_root = str(_PKG_DIR.parent)
     if package_root not in sys.path:

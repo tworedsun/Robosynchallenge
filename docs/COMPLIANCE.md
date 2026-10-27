@@ -48,9 +48,9 @@
 | 正运动学 FK | `robot.compute_fk(qpos, name="<arm>_arm", link_names=["<arm>_link6"])` | 由本体感受推导,不含场景信息 |
 | 逆运动学 IK | `robot.compute_ik(pose, joint_seed=..., name="left_arm")` | 运动学求解,不含场景真值 |
 | 关节限位 | `robot.get_qpos_limits(name="<arm>_arm")` | 机器人描述 |
-| 相机内参 | `robosyn_hybrid/calibration.json` | **公开常量**,抄自官方 `configs/handle_basket/random/gym_config.json`,运行时不读模拟器 |
-| 腕相机安装位姿 | `robosyn_hybrid/calibration.json` 的 `pos` / `quat` | 同上,公开常量 |
-| 抓取先验 | `robosyn_hybrid/priors.py` 的 `MILK_GRASP_OBJECT` | 抄自官方公开配置 |
+| 相机内参 | `policy/hybrid/robosyn_hybrid/calibration.json` | **公开常量**,抄自官方 `configs/handle_basket/random/gym_config.json`,运行时不读模拟器 |
+| 腕相机安装位姿 | `policy/hybrid/robosyn_hybrid/calibration.json` 的 `pos` / `quat` | 同上,公开常量 |
+| 抓取先验 | `policy/hybrid/robosyn_hybrid/priors.py` 的 `MILK_GRASP_OBJECT` | 抄自官方公开配置 |
 | 物体尺寸先验 | `MILK_PRIOR_SIZE` | 公开物体描述 |
 | 成功判据 `is_task_success()` | `env.get_wrapper_attr("is_task_success")()` | 官方 `policy/act/deploy_policy.py` 的 `eval()` 本身每步就读它 |
 | 按钮位置随机范围 | `clickbell.py` 的 `BUTTON_REGION_MIN/MAX` = `(0.4,-0.3,0.83)…(0.85,0.3,0.83)` | **公开常量**,抄自官方 `configs/click_bell/random/gym_config.json` 的 `env.events.init_button_pose.position_range`;仅用作**腕相机视野搜索的区域**(按钮恒定在桌面 z=0.83),不代入任何具体 seed 的真值 |
@@ -60,8 +60,8 @@
 | 筒口 3D 位置 | 双腕内圈椭圆中心 + `P = K[R^T \| -R^T t]` 线性三角化 | 相机位姿 = FK + 公开安装常量,`K` = `priors.camera_K`;不读深度缓冲、不读物体真值 |
 | 固定交接路点 | `handover.py` 的 `MANUAL_TARGET_QPOS`(14 通道) | 参考包内**与场景无关**的离线遥操作路点(全场次同一个文件),不是任何一局的真值 |
 
-三条混合流程(`handle_basket` = `robosyn_hybrid/flow.py`,`click_bell` =
-`robosyn_hybrid/clickbell.py`,`items_handover` = `robosyn_hybrid/handover.py`)
+三条混合流程(`handle_basket` = `policy/hybrid/robosyn_hybrid/flow.py`,`click_bell` =
+`policy/hybrid/robosyn_hybrid/clickbell.py`,`items_handover` = `policy/hybrid/robosyn_hybrid/handover.py`)
 使用的是**同一组信号**,没有新增任何一类;
 `clickbell.py` 另外明确不读官方 action bank / 专家先验,按压姿态沿用当前 EE 姿态,
 按钮位置由右腕 RGB + 运动立体深度自行估计。
@@ -108,7 +108,7 @@ T_world_camera(q) = FK(q, "<arm>_link6") @ T_link6_camera
 
 | 参考实现的做法 | 位置 | 本包的处理 |
 | --- | --- | --- |
-| `capture()` 读取 `obs["sensor"][cam]["depth"]` —— **模拟器深度缓冲** | `measure_motion_stereo_depth.py::capture` | `robosyn_hybrid/stereo.py::capture()` 只返回 RGB,不再触碰 `depth` 键 |
+| `capture()` 读取 `obs["sensor"][cam]["depth"]` —— **模拟器深度缓冲** | `measure_motion_stereo_depth.py::capture` | `policy/hybrid/robosyn_hybrid/stereo.py::capture()` 只返回 RGB,不再触碰 `depth` 键 |
 | `camera_optical_pose()` 读取 `env.sensors[uid].get_arena_pose()` —— **运行时相机真值外参** | 同上 | 改为 `FK(qpos, "<arm>_link6") @ camera_mount(公开常量)` |
 | `object_centers()` 读取 `sim.get_rigid_object(uid).get_local_pose()` —— **物体真值位姿** | 同上,被 `pick_view_pose` / `objects_in_view` / `frames_objects` 使用 | 这些函数**未移植**;`env.sim` 在本包中零出现 |
 
@@ -142,7 +142,7 @@ to_matrix=True)` 的 `link_names` 参数被忽略,返回的是 tool/TCP 帧。**
 ### 实测方法(不是解析推测)
 
 2026-10-10 在真实 RTX 4090 服务器 + `EmbodiChain_main 0.2.4` 检出上跑 L1
-分层几何诊断 `python robosyn_hybrid/scripts/verify_clickbell_geometry.py`,
+分层几何诊断 `python policy/hybrid/robosyn_hybrid/scripts/verify_clickbell_geometry.py`,
 取 `layers[0].data.verify_mount`:
 
 * `measured_mount = inv(fk_returned(qpos)) @ (sensor.get_arena_pose(to_matrix=True) @ SIM_TO_OPTICAL)`
@@ -184,7 +184,7 @@ FK_TO_LINK6 = inv(TOOL_FROM_LINK6) =
 
 代入验证残差 `max|pred - measured| = 1.277e-06`(纯 numpy 复算,反过来证明
 该矩阵是数值解出的,不是拍的)。两个常量已作为模块级常量写进
-`robosyn_hybrid/priors.py`(`TOOL_FROM_LINK6` / `FK_TO_LINK6`,均在 `__all__`),
+`policy/hybrid/robosyn_hybrid/priors.py`(`TOOL_FROM_LINK6` / `FK_TO_LINK6`,均在 `__all__`),
 修正后的主路径是
 
 ```text
@@ -195,7 +195,7 @@ wrist_camera_pose(q) = fk_returned(q) @ FK_TO_LINK6 @ (T_mount @ SIM_TO_OPTICAL)
 
 ### `HYBRID_FK_FRAME` 开关
 
-`submission/robosyn_hybrid/settings.py` 新增 `Settings.fk_frame`,从环境变量
+`policy/hybrid/robosyn_hybrid/settings.py` 新增 `Settings.fk_frame`,从环境变量
 **`HYBRID_FK_FRAME`** 读取:
 
 | 取值 | 含义 | 行为 |
@@ -224,7 +224,7 @@ wrist_camera_pose(q) = fk_returned(q) @ FK_TO_LINK6 @ (T_mount @ SIM_TO_OPTICAL)
 请重跑一次(约 1 分钟):
 
 ```bash
-python robosyn_hybrid/scripts/verify_clickbell_geometry.py \
+python policy/hybrid/robosyn_hybrid/scripts/verify_clickbell_geometry.py \
     --repo-root <官方仓库根> --setting random --seed 0 --arm right \
     --skip-depth --skip-vlm --out /tmp/L1.json
 # 左臂再跑一次:--arm left --out /tmp/L1_left.json
@@ -369,7 +369,7 @@ water_pouring)的 100 episode 结果,ACT 五任务宏平均 55.6%。
 | 5 | 本包 `ACTPolicyWrapper` 加载同一 checkpoint | **成功**,`normalization_path == "external_0.4.4"`、`action_dim == 14`、`act_step == 50` |
 | 6 | `select_chunk_action` 的 action queue 语义 | **正确**:第 1 次 `ran_inference=True`,第 2 次 `False`(队列复用),`reset()` 后恢复 `True` |
 | 7 | `drain_inference_times()` | 返回真实样本(CPU 单次前向 ≈0.49 s) |
-| 8 | `robosyn_hybrid/scripts/smoke_imports.py` 预检 | **0 failures**:适配器契约、settings、相机安装矩阵正交且 det=+1、10 任务映射与 HF 链接、固定 revision 全部通过 |
+| 8 | `policy/hybrid/robosyn_hybrid/scripts/smoke_imports.py` 预检 | **0 failures**:适配器契约、settings、相机安装矩阵正交且 det=+1、10 任务映射与 HF 链接、固定 revision 全部通过 |
 | 9 | 静态集成校验(AST) | 跨模块 import 11/11、懒加载属性 13/13、调用签名 13/13、17 状态 ↔ 17 个 `_stage_*` 一一对应 |
 | 10 | `items_handover` 混合流程的静态/逻辑校验 | `py_compile` 通过;临时 AST 校验脚本逐条核对 `handover.py` 对 `stereo/vlm/grasp/priors/act_wrapper/flow` 的 **45 个调用点**实参个数与关键字名、**13 状态 ↔ 13 个 `_stage_*`** 与 **7 子阶段 ↔ 7 个 `_prim_*`** 一一对应、**42 个 `self._*` 调用**全部可解析(其中 12 个继承自 `HandleBasketFlow`)、四方法签名与父类逐字一致、步数预算合计 **345 ≤ 350** 且 `TAIL_RESERVE` 与逐状态预算逐项一致;用**纯 numpy 假环境**(假 robot FK/IK + 假 env + 假 ACT + 假 VLM,含桌面接触模型)跑 **5 个场景**:完整链路 12 相位全部走通(流程自用 332 步 + ACT fill 18 = 350)、VLM 不可用 / IK 无解 / 预算 120 / 官方 clear 300 四种情况下都提前降级为纯 ACT 且**从不超步**;校验脚本已删除 |
 | 11 | `click_bell` 混合流程的静态/逻辑校验 | `py_compile` 通过;AST 校验 `clickbell.py` 对 stereo/vlm/grasp/flow/act_wrapper 的 **27 个调用点**实参个数与关键字名逐条匹配、**11 状态 ↔ 11 个 `_stage_*`** 一一对应、`_servo_qpos` 签名与 SPEC 一致;用**纯 numpy 假环境**(假 FK/IK/立体/VLM)干跑,验证状态迁移、`_servo_qpos` 补偿、press 早停、`max_env_steps` 截断与全部降级路径 |
@@ -390,7 +390,7 @@ water_pouring)的 100 episode 结果,ACT 五任务宏平均 55.6%。
 | `verify_mount` 对真实仿真器的判别 | 同上 | 已在 RTX 4090 上完成,见 §2.5(**已结案**:FK 返回 tool 帧,`FK_TO_LINK6` 已内置);换检出时需重跑 L1 |
 | `stereo.fetch_depth` 的深度精度 | 需要 FoundationStereo + GPU | 冒烟时看 `HYBRID_DEBUG_DIR` 下的 depth 产物 |
 | `vlm.py` 对真实 VLM 端点的请求/解析 | 需要起一个 OpenAI 兼容端点 | `docs/REPRODUCE.md` §5 的 curl 验证 + 冒烟 |
-| SAM2 掩码(`ultralytics` 未安装在验证环境) | 依赖未装 | `pip install -r robosyn_hybrid/requirements/robosyn-extra.txt` |
+| SAM2 掩码(`ultralytics` 未安装在验证环境) | 依赖未装 | `pip install -r policy/hybrid/robosyn_hybrid/requirements/robosyn-extra.txt` |
 | 九个官方 checkpoint 的实际下载 | 验证机无法访问 `huggingface.co` | 用 `HF_ENDPOINT` 镜像 |
 
 **结论:这份包在"HF 权重 + ACT 适配器"这条链路上已被真实验证;

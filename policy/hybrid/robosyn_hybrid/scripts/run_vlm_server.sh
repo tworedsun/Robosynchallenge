@@ -2,7 +2,7 @@
 # =============================================================================
 # run_vlm_server.sh —— 启动一个 OpenAI 兼容的本地 VLM 服务
 #
-# 用途：RoboSynChallenge 混合提交流程（robosyn_hybrid/vlm.py）需要一个
+# 用途：RoboSynChallenge 混合提交流程（policy/hybrid/robosyn_hybrid/vlm.py）需要一个
 #       OpenAI 兼容的 HTTP chat/completions 端点。
 #
 # ★ 推荐后端：ollama + qwen3vl:8b
@@ -16,15 +16,15 @@
 #     export HYBRID_VLM_MODEL=qwen3vl:8b
 #
 #   本脚本也支持直接拉起 ollama：
-#     VLM_BACKEND=ollama bash robosyn_hybrid/scripts/run_vlm_server.sh
+#     VLM_BACKEND=ollama bash policy/hybrid/robosyn_hybrid/scripts/run_vlm_server.sh
 #
 # 备用后端：llama.cpp 的 `llama-server`（需 --mmproj 多模态投影）
 #
 # 用法：
-#   bash robosyn_hybrid/scripts/run_vlm_server.sh
+#   bash policy/hybrid/robosyn_hybrid/scripts/run_vlm_server.sh
 #   MODEL_PATH=/data/models/Qwen3-VL-8B-Q4_K_M.gguf \
 #   MMPROJ_PATH=/data/models/mmproj-Qwen3-VL-8B-f16.gguf \
-#   VLM_PORT=8080 bash robosyn_hybrid/scripts/run_vlm_server.sh
+#   VLM_PORT=8080 bash policy/hybrid/robosyn_hybrid/scripts/run_vlm_server.sh
 #
 # 可覆盖的环境变量（全部有默认值）：
 #   VLM_BACKEND       "llama"（默认）或 "ollama"
@@ -49,9 +49,9 @@
 
 set -euo pipefail
 
-# --- 路径解析：脚本位于 <repo>/scripts/，资产默认在 <repo>/robosyn_hybrid_assets ---
+# --- 路径解析：脚本位于 <repo>/policy/hybrid/robosyn_hybrid/scripts/，资产默认在 <repo>/robosyn_hybrid_assets ---
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../../../.." && pwd)"
 ASSETS_DIR="${ROBOSYN_HYBRID_ASSETS:-${REPO_ROOT}/robosyn_hybrid_assets}"
 
 # --- 可覆盖参数（清晰默认值） ---
@@ -116,13 +116,13 @@ fi
 # 权重文件存在性检查（给出可操作提示）。
 if [[ ! -f "${MODEL_PATH}" ]]; then
     die "VLM 主模型文件不存在: ${MODEL_PATH}
-      请运行 \`bash robosyn_hybrid/scripts/download_assets.sh\` 下载权重，
+      请运行 \`bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh\` 下载权重，
       或设置 MODEL_PATH=/path/to/model.gguf（也可设置 ROBOSYN_HYBRID_ASSETS 指向资产目录）。"
 fi
 if [[ -n "${MMPROJ_PATH}" ]]; then
     if [[ ! -f "${MMPROJ_PATH}" ]]; then
         die "多模态投影文件不存在: ${MMPROJ_PATH}
-      请运行 \`bash robosyn_hybrid/scripts/download_assets.sh\` 下载 mmproj，
+      请运行 \`bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh\` 下载 mmproj，
       或设置 MMPROJ_PATH=/path/to/mmproj.gguf；若模型本身已内置视觉塔，可设 MMPROJ_PATH= 跳过 --mmproj。"
     fi
 else

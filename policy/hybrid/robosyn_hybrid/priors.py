@@ -74,7 +74,7 @@ SIM_TO_OPTICAL = np.diag([1.0, -1.0, -1.0, 1.0]).astype(np.float64)
 # 它只是 ``compute_fk`` 的一个隐含约定。
 #
 # 实测方法与实测值:2026-10-10 在真实 RTX 4090 服务器 + ``EmbodiChain_main 0.2.4``
-# 检出上,用 ``robosyn_hybrid/stereo.py::verify_mount`` 的 L1 分层几何诊断
+# 检出上,用 ``policy/hybrid/robosyn_hybrid/stereo.py::verify_mount`` 的 L1 分层几何诊断
 # 得到 ``measured_mount = inv(fk返回值) @ 传感器真值光学位姿``(腕相机装在
 # ``<arm>_link6`` 上),再把测量值与公开安装常量解出的 ``expected_mount``
 # 联立,反解出两个帧之间的精确刚体变换,残差 ``max|pred - measured|`` 仅

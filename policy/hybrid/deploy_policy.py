@@ -34,14 +34,16 @@ import os
 import sys
 from pathlib import Path
 
-# Make `robosyn_hybrid` importable when the adapter is imported first.  The
-# directory is derived from this file (policy/hybrid/deploy_policy.py), never
-# hard-coded, and the official eval.sh already puts the repository root on
-# PYTHONPATH.
+# Make `robosyn_hybrid` importable when the adapter is imported first.  All
+# participant runtime code lives inside policy/: the package is
+# policy/hybrid/robosyn_hybrid, so policy/hybrid must be on sys.path.  Both
+# locations are derived from this file (policy/hybrid/deploy_policy.py), never
+# hard-coded; the official eval.sh also puts them on PYTHONPATH.
 _PKG_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _PKG_DIR.parents[1]
-if str(_REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(_REPO_ROOT))
+for _candidate in (str(_PKG_DIR), str(_REPO_ROOT)):
+    if _candidate not in sys.path:
+        sys.path.insert(0, _candidate)
 
 import numpy as np  # noqa: E402  (import order is intentional)
 import torch  # noqa: E402

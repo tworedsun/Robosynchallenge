@@ -26,12 +26,11 @@ cd /path/to/RoboSynChallenge
 git clone https://github.com/tworedsun/Robosynchallenge /tmp/hybrid
 
 cp -r /tmp/hybrid/policy/hybrid    policy/
-cp -r /tmp/hybrid/robosyn_hybrid   .
 ```
 
-> ⚠️ **只拷贝 `policy/hybrid/` 和 `robosyn_hybrid/`**。不要把提交包顶层的
-> `scripts/` 拷到官方仓库根目录——那里已经有 `scripts/eval_policy.py`。
-> 本提交包的所有脚本都在 `robosyn_hybrid/scripts/` 下。
+> ⚠️ **只拷贝 `policy/hybrid/`**（其中已包含 `policy/hybrid/robosyn_hybrid/` 运行时库）。
+> 不要把任何东西拷到官方仓库根目录的 `scripts/`——那里已经有 `scripts/eval_policy.py`。
+> 本提交包的所有脚本都在 `policy/hybrid/robosyn_hybrid/scripts/` 下。
 
 自检:
 
@@ -48,7 +47,7 @@ print('adapter ok:', get_model, eval, reset_model)
 ## 2. 安装额外依赖
 
 ```bash
-pip install -r robosyn_hybrid/requirements/robosyn-extra.txt
+pip install -r policy/hybrid/robosyn_hybrid/requirements/robosyn-extra.txt
 ```
 
 主要新增:`pillow`、`opencv-python`、`ultralytics`(SAM2 加载器)、`requests`、
@@ -60,7 +59,7 @@ pip install -r robosyn_hybrid/requirements/robosyn-extra.txt
 
 ```bash
 export ROBOSYN_HYBRID_ASSETS=$PWD/robosyn_hybrid_assets
-bash robosyn_hybrid/scripts/download_assets.sh
+bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh
 ```
 
 脚本会下载并**逐个校验 SHA-256**:
@@ -73,7 +72,7 @@ bash robosyn_hybrid/scripts/download_assets.sh
 | `vlm/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf` | `hf-mirror.com/ggml-org/Qwen2.5-VL-7B-Instruct-GGUF` | ~4.7 GB | 由 HTTP 层保证完整性 |
 | `vlm/mmproj-Qwen2.5-VL-7B-Instruct-f16.gguf` | 同上 | ~1.35 GB | 同上 |
 
-不需要 VLM 时用 `bash robosyn_hybrid/scripts/download_assets.sh --no-vlm`。
+不需要 VLM 时用 `bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh --no-vlm`。
 需要研究阶段实际使用的 27B 模型时用 `VLM_SIZE=large`(总 17 GB,需 ~24 GB 显存独占)。
 
 > `FoundationStereo` 的 11-33-40 权重官方只给出 Google Drive 链接,
@@ -89,7 +88,7 @@ bash robosyn_hybrid/scripts/download_assets.sh
 FoundationStereo 的 CUDA 扩展与仿真器环境冲突,因此它跑在自己的环境里:
 
 ```bash
-bash robosyn_hybrid/scripts/setup_fs_env.sh
+bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh
 export FS_PYTHON=$PWD/robosyn_hybrid_assets/fs_venv/bin/python
 ```
 
@@ -110,7 +109,7 @@ worker 不存在时自动回退到每次调用一个子进程(慢但不失败)�
 
 ```bash
 ollama pull qwen3vl:8b
-VLM_BACKEND=ollama bash robosyn_hybrid/scripts/run_vlm_server.sh &
+VLM_BACKEND=ollama bash policy/hybrid/robosyn_hybrid/scripts/run_vlm_server.sh &
 export HYBRID_VLM_URL=http://127.0.0.1:11434/v1/chat/completions
 export HYBRID_VLM_MODEL=qwen3vl:8b
 ```
@@ -120,7 +119,7 @@ export HYBRID_VLM_MODEL=qwen3vl:8b
 ```bash
 MODEL_PATH=/path/Qwen3-VL-8B-Instruct-Q4_K_M.gguf \
 MMPROJ_PATH=/path/mmproj-F16.gguf \
-VLM_PORT=8080 bash robosyn_hybrid/scripts/run_vlm_server.sh &
+VLM_PORT=8080 bash policy/hybrid/robosyn_hybrid/scripts/run_vlm_server.sh &
 export HYBRID_VLM_URL=http://127.0.0.1:8080/v1/chat/completions
 export HYBRID_VLM_MODEL=qwen3vl:8b        # llama-server 会忽略该字段,填什么都可以
 ```
@@ -270,13 +269,13 @@ done
 | 现象 | 原因 / 处理 |
 | --- | --- |
 | `FileNotFoundError: Required asset 'sam2.1_t.pt'` | 没跑 `download_assets.sh`,或 `ROBOSYN_HYBRID_ASSETS` 指错 |
-| `RuntimeError: sam2 包不可用` | `pip install -r robosyn_hybrid/requirements/robosyn-extra.txt` |
+| `RuntimeError: sam2 包不可用` | `pip install -r policy/hybrid/robosyn_hybrid/requirements/robosyn-extra.txt` |
 | 日志里 `vlm_disabled` | `HYBRID_VLM_URL` 未设置。这是预期的降级,不是崩溃 |
 | 日志里 `timeout after 120s` | VLM 太慢。调大 `HYBRID_VLM_TIMEOUT_S`,或换更小的模型 |
 | `no image-horizontal nudge found for this pose` | 起始关节位姿下找不到满足基线的横向平移。属流程失败,会自动降级到 ACT |
 | `no feasible pose in scale/yaw/center candidate set` | IK 搜索失败。同上,自动降级 |
 | FoundationStereo 报 CUDA 扩展编译错误 | 检查 `setup_fs_env.sh` 用的 CUDA 版本与 `nvcc` 是否匹配仿真器驱动 |
-| `Policy action has dim X, but env expects 14` | checkpoint 与任务不匹配(见 `robosyn_hybrid/registry.py`) |
+| `Policy action has dim X, but env expects 14` | checkpoint 与任务不匹配(见 `policy/hybrid/robosyn_hybrid/registry.py`) |
 
 ---
 
@@ -289,5 +288,5 @@ done
 | Qwen2.5-VL | Apache-2.0 |
 | 官方 ACT checkpoints | Apache-2.0(随 RoboSynChallenge 发布) |
 
-`robosyn_hybrid/scripts/download_assets.sh` 只是下载,不重新分发这些权重;请在使用前自行确认
+`policy/hybrid/robosyn_hybrid/scripts/download_assets.sh` 只是下载,不重新分发这些权重;请在使用前自行确认
 各上游许可。本仓库自身以 Apache-2.0 发布。

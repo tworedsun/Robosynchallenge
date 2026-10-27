@@ -6,9 +6,9 @@
 # substituted download fails loudly instead of silently degrading perception.
 #
 # USAGE
-#   bash robosyn_hybrid/scripts/download_assets.sh              # SAM2 + FoundationStereo + VLM
-#   bash robosyn_hybrid/scripts/download_assets.sh --no-vlm     # skip the ~5.5 GB VLM
-#   VLM_SIZE=large bash robosyn_hybrid/scripts/download_assets.sh   # 27B VLM used in research
+#   bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh              # SAM2 + FoundationStereo + VLM
+#   bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh --no-vlm     # skip the ~5.5 GB VLM
+#   VLM_SIZE=large bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh   # 27B VLM used in research
 #
 # ENVIRONMENT
 #   ROBOSYN_HYBRID_ASSETS  destination directory
@@ -21,7 +21,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 ASSETS="${ROBOSYN_HYBRID_ASSETS:-$REPO_ROOT/robosyn_hybrid_assets}"
 HF_ENDPOINT="${HF_ENDPOINT:-https://hf-mirror.com}"
 VLM_SIZE="${VLM_SIZE:-small}"

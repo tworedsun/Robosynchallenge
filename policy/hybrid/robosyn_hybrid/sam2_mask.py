@@ -6,7 +6,7 @@
   :func:`robosyn_hybrid.settings.get_settings` 的 ``sam2_ckpt``
   （可用 ``SAM2_CKPT`` 环境变量覆盖）。
 * :func:`load_sam2` 在 ``sam2`` 包/``ultralytics`` 缺失或权重文件不存在时抛
-  :class:`RuntimeError`，并给出可操作提示（指向 ``robosyn_hybrid/scripts/download_assets.sh``）；
+  :class:`RuntimeError`，并给出可操作提示（指向 ``policy/hybrid/robosyn_hybrid/scripts/download_assets.sh``）；
   调用方（状态机）负责降级。
 
 其余函数行为与原始实现逐字一致。
@@ -34,7 +34,7 @@ __all__ = [
 
 # 权重下载/环境准备的统一提示语（避免各处重复且路径写死）。
 _DOWNLOAD_HINT = (
-    "请先运行 `bash robosyn_hybrid/scripts/download_assets.sh` 下载 SAM2.1 权重 "
+    "请先运行 `bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh` 下载 SAM2.1 权重 "
     "（默认放到 <assets_dir>/sam2.1_t.pt），"
     "或用 `SAM2_CKPT=/path/to/sam2.1_t.pt` 指定已下载的权重文件。"
 )
@@ -82,7 +82,7 @@ def load_sam2(model_path: str | None = None, device: str = "cuda") -> object:
     except ImportError as exc:
         raise RuntimeError(
             "未安装 SAM2 推理依赖（`ultralytics`，SAM2 后端在其中）。"
-            "请运行 `bash robosyn_hybrid/scripts/setup_fs_env.sh` 或 `pip install ultralytics`；"
+            "请运行 `bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh` 或 `pip install ultralytics`；"
             f"权重下载见 download_assets.sh。{_DOWNLOAD_HINT}"
         ) from exc
 

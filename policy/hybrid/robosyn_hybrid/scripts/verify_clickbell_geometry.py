@@ -7,7 +7,7 @@
 ================================================================================
 本文件是**诊断工具**,**绝不被策略调用**,也不属于任何策略/部署路径:
 
-* ``policy/hybrid/deploy_policy.py`` / ``robosyn_hybrid/clickbell.py`` /
+* ``policy/hybrid/deploy_policy.py`` / ``policy/hybrid/robosyn_hybrid/clickbell.py`` /
   ``flow.py`` **不得** import 本模块,也不得复制本模块里的任何函数;
 * 策略本体**不读任何物体真值位姿**:真值只允许出现在本文件里;
 * **L5 是全脚本唯一读真值的层**(``base.sim.get_articulation("button")``,
@@ -51,7 +51,7 @@ GPU 机器后跑**一条命令**,就把这条链路的每一层都打上可判�
 ================================================================================
 ::
 
-    python robosyn_hybrid/scripts/verify_clickbell_geometry.py \
+    python policy/hybrid/robosyn_hybrid/scripts/verify_clickbell_geometry.py \
         --repo-root /path/to/RoboSynChallenge \
         --setting random --seed 0 \
         --out /path/to/diag.json [--skip-depth] [--skip-vlm]
@@ -2303,7 +2303,7 @@ def _next_steps(results: Sequence[Layer]) -> list[str]:
     l3 = by_name.get("L3_vlm")
     if l3 is not None and l3.status != "pass":
         hints.append(
-            "L3:配置 HYBRID_VLM_URL(见 robosyn_hybrid/scripts/run_vlm_server.sh)"
+            "L3:配置 HYBRID_VLM_URL(见 policy/hybrid/robosyn_hybrid/scripts/run_vlm_server.sh)"
             "或用 --button-uv/--button-bbox 手动给像素继续验证 L4-L7"
         )
     l5 = by_name.get("L5_ground_truth")

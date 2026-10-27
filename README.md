@@ -53,8 +53,8 @@ for the full signal-by-signal declaration.
 >
 > `click_bell` and `items_handover` keep their **official** released
 > checkpoints: their hybrid flows
-> (see [`robosyn_hybrid/clickbell.py`](robosyn_hybrid/clickbell.py) and
-> [`robosyn_hybrid/handover.py`](robosyn_hybrid/handover.py)) do the analytic
+> (see [`policy/hybrid/robosyn_hybrid/clickbell.py`](policy/hybrid/robosyn_hybrid/clickbell.py) and
+> [`policy/hybrid/robosyn_hybrid/handover.py`](policy/hybrid/robosyn_hybrid/handover.py)) do the analytic
 > stage and hand the remaining steps to that same ACT policy, so the two paths
 > of each task share one set of weights. `HYBRID_CKPT` / `--checkpoint_path` is
 > therefore optional for them — the pinned Hub revision is used when no local
@@ -68,7 +68,7 @@ for the full signal-by-signal declaration.
 > degrades to pure ACT instead of overrunning.
 
 The mapping also lives in code at
-[`robosyn_hybrid/registry.py`](robosyn_hybrid/registry.py) so the two can never
+[`policy/hybrid/robosyn_hybrid/registry.py`](policy/hybrid/robosyn_hybrid/registry.py) so the two can never
 drift apart silently. Every checkpoint is **pinned to a commit sha** there: the
 nine released official checkpoints (five of which are the exact revisions the
 organizers published in `evaluation_results/released_checkpoint_results.json`)
@@ -90,26 +90,27 @@ Requires the official RoboSynChallenge environment (EmbodiChain + PyTorch 2.7 +
 cd /path/to/RoboSynChallenge
 git clone https://github.com/tworedsun/Robosynchallenge /tmp/hybrid
 cp -r /tmp/hybrid/policy/hybrid   policy/
-cp -r /tmp/hybrid/robosyn_hybrid  .
+# policy/hybrid/ already contains the robosyn_hybrid/ runtime library and all
+# helper scripts, so nothing else needs to be copied.
 
 # 3. extra Python packages (SAM2 loader, VLM client, HF hub)
-pip install -r robosyn_hybrid/requirements/robosyn-extra.txt
+pip install -r policy/hybrid/robosyn_hybrid/requirements/robosyn-extra.txt
 
 # 4. third-party weights: SAM2.1 + FoundationStereo + a vision model
 export ROBOSYN_HYBRID_ASSETS=$PWD/robosyn_hybrid_assets
-bash robosyn_hybrid/scripts/download_assets.sh
+bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh
 
 # 5. FoundationStereo gets its own environment (its CUDA extensions conflict
 #    with the simulator environment)
-bash robosyn_hybrid/scripts/setup_fs_env.sh
+bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh
 
 # 6. start the OpenAI-compatible VLM endpoint; it prints the URL to export
-bash robosyn_hybrid/scripts/run_vlm_server.sh &
+bash policy/hybrid/robosyn_hybrid/scripts/run_vlm_server.sh &
 export HYBRID_VLM_URL=http://127.0.0.1:11434/v1/chat/completions
 ```
 
 Nothing above needs an internet connection to `huggingface.co` directly;
-`robosyn_hybrid/scripts/download_assets.sh` uses `HF_ENDPOINT` (default `https://hf-mirror.com`)
+`policy/hybrid/robosyn_hybrid/scripts/download_assets.sh` uses `HF_ENDPOINT` (default `https://hf-mirror.com`)
 and all large files are verified against recorded SHA-256 digests.
 
 ---
@@ -133,7 +134,7 @@ done
 
 `HYBRID_CKPT` may be a local directory or a Hugging Face repo id; when it is
 omitted the adapter falls back to the checkpoint registered in
-`robosyn_hybrid/registry.py`. That fallback works for all ten tasks — for
+`policy/hybrid/robosyn_hybrid/registry.py`. That fallback works for all ten tasks — for
 `handle_basket` it resolves to the migrated `dimofu/ACT_sim_handle_basket`
 repository, and an explicit local checkpoint directory still wins over it.
 
@@ -187,7 +188,7 @@ Three consequences worth knowing before you debug a low `handle_basket` score:
    grasp search. Without it the flow degrades to plain ACT on the first stage,
    and `handle_basket` scores whatever the released ACT baseline scores. Check
    `HYBRID_VLM_URL` first.
-2. **The hybrid path needs a CUDA device.** `robosyn_hybrid/grasp.py` performs
+2. **The hybrid path needs a CUDA device.** `policy/hybrid/robosyn_hybrid/grasp.py` performs
    FK/IK on the GPU, matching the reference implementation. On a CPU-only box
    the grasp stages raise, degrade to ACT, and `handle_basket` silently becomes
    the baseline.
@@ -205,7 +206,7 @@ disk, so a silent fallback is always traceable to a concrete stage and reason.
 ## License
 
 Apache-2.0, matching the upstream RoboSynChallenge release. Third-party weights
-downloaded by `robosyn_hybrid/scripts/download_assets.sh` keep their own licenses — see
+downloaded by `policy/hybrid/robosyn_hybrid/scripts/download_assets.sh` keep their own licenses — see
 [`docs/REPRODUCE.md`](docs/REPRODUCE.md).
 
 ---
@@ -213,32 +214,35 @@ downloaded by `robosyn_hybrid/scripts/download_assets.sh` keep their own license
 ## Repository layout
 
 ```
-policy/hybrid/          the adapter the official harness imports
-  __init__.py           exports get_model / eval / reset_model
-  deploy_policy.py      dispatch: three hybrid flows, official ACT elsewhere
-  deploy_policy.yml     protocol defaults
-  eval.sh               official-style launcher
+policy/hybrid/            the adapter the official harness imports
+  __init__.py             exports get_model / eval / reset_model
+  deploy_policy.py        dispatch: three hybrid flows, official ACT elsewhere
+  deploy_policy.yml       protocol defaults
+  eval.sh                 official-style launcher
+  robosyn_hybrid/         the runtime library the adapter uses
+    settings.py           every path/switch, environment-driven
+    priors.py             public constants: grasp frame, sizes, camera calibration
+    calibration.json      public intrinsics and wrist-camera mount
+    registry.py           task -> checkpoint map
+    act_wrapper.py        LeRobot ACT, both 0.4.4 and legacy b883328 layouts
+    stereo.py             motion-stereo depth (RGB only, no ground truth)
+    fs_infer.py           FoundationStereo single-shot inference
+    vlm.py                OpenAI-compatible VLM client
+    sam2_mask.py          SAM2.1 mask refinement
+    grasp.py              grasp-pose search and IK
+    flow.py               the handle_basket state machine
+    clickbell.py          the click_bell state machine
+    handover.py           the items_handover state machine
+    scripts/              asset download, FoundationStereo env, VLM server, pre-flight
+    requirements/         extra packages and the isolated stereo environment
 
-robosyn_hybrid/         the library the adapter uses
-  settings.py           every path/switch, environment-driven
-  priors.py             public constants: grasp frame, sizes, camera calibration
-  calibration.json      public intrinsics and wrist-camera mount
-  registry.py           task -> checkpoint map
-  act_wrapper.py        LeRobot ACT, both 0.4.4 and legacy b883328 layouts
-  stereo.py             motion-stereo depth (RGB only, no ground truth)
-  fs_infer.py           FoundationStereo single-shot inference
-  vlm.py                OpenAI-compatible VLM client
-  sam2_mask.py          SAM2.1 mask refinement
-  grasp.py              grasp-pose search and IK
-  flow.py               the handle_basket state machine
-  clickbell.py          the click_bell state machine
-  handover.py           the items_handover state machine
-  scripts/              asset download, FoundationStereo env, VLM server, pre-flight
-  requirements/         extra packages and the isolated stereo environment
-
-docs/                   reproduction, submission notes, compliance declaration
+docs/                     reproduction, submission notes, compliance declaration
 ```
 
-> All of this package's own scripts live under `robosyn_hybrid/scripts/`, never
+> Everything the adapter needs at evaluation time ships **inside `policy/`**:
+> the `policy/hybrid/` package contains the full runtime library, so the
+> adapter never imports participant files from outside `policy/`.
+
+> All of this package's own scripts live under `policy/hybrid/robosyn_hybrid/scripts/`, never
 > in the official checkout's top-level `scripts/` directory, which already
 > contains `eval_policy.py`. See [`docs/REPRODUCE.md`](docs/REPRODUCE.md) §1.

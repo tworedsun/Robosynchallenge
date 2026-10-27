@@ -9,12 +9,12 @@
 #   * 不修改任何全局解释器,不 pip install 到系统环境。
 #
 # 用法:
-#   bash robosyn_hybrid/scripts/setup_fs_env.sh venv      # 建 venv + 装 requirements
-#   bash robosyn_hybrid/scripts/setup_fs_env.sh clone     # 把 FoundationStereo 代码拉到 FS_ROOT
-#   bash robosyn_hybrid/scripts/setup_fs_env.sh weights   # 下载 model_best_bp2.pth
-#   bash robosyn_hybrid/scripts/setup_fs_env.sh serve     # 前台启动常驻 worker(FS_STEREO_SOCKET)
-#   bash robosyn_hybrid/scripts/setup_fs_env.sh check     # 打印解析后的路径与存在性
-#   bash robosyn_hybrid/scripts/setup_fs_env.sh all       # clone + venv + weights
+#   bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh venv      # 建 venv + 装 requirements
+#   bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh clone     # 把 FoundationStereo 代码拉到 FS_ROOT
+#   bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh weights   # 下载 model_best_bp2.pth
+#   bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh serve     # 前台启动常驻 worker(FS_STEREO_SOCKET)
+#   bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh check     # 打印解析后的路径与存在性
+#   bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh all       # clone + venv + weights
 #
 # 建议的导出(打印在结尾,不自动写进 shell 配置):
 #   export ROBOSYN_HYBRID_ASSETS=<资产目录>
@@ -26,7 +26,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-SUBMISSION_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
+HYBRID_PKG_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+SUBMISSION_ROOT="$(cd -- "${SCRIPT_DIR}/../../../.." && pwd)"
 
 # 资产目录:环境变量优先,否则放到提交包旁边的 robosyn_hybrid_assets。
 ASSETS_DIR="${ROBOSYN_HYBRID_ASSETS:-${SUBMISSION_ROOT}/robosyn_hybrid_assets}"
@@ -46,8 +47,8 @@ FS_WEIGHTS_SUBDIR="${FS_WEIGHTS_SUBDIR:-11-33-40}"
 
 SYSTEM_PYTHON="${PYTHON:-python3}"
 VENV_PYTHON="${FS_VENV_DIR}/bin/python"
-REQUIREMENTS_FILE="${SUBMISSION_ROOT}/robosyn_hybrid/requirements/foundationstereo.txt"
-FS_INFER_SCRIPT="${SUBMISSION_ROOT}/robosyn_hybrid/fs_infer.py"
+REQUIREMENTS_FILE="${HYBRID_PKG_DIR}/requirements/foundationstereo.txt"
+FS_INFER_SCRIPT="${HYBRID_PKG_DIR}/fs_infer.py"
 
 log()  { printf '[setup_fs_env] %s\n' "$*"; }
 die()  { printf '[setup_fs_env] ERROR: %s\n' "$*" >&2; exit 1; }
@@ -145,7 +146,7 @@ cmd_weights() {
   local gdown_py="${VENV_PYTHON}"
   [ -x "${gdown_py}" ] || gdown_py="${SYSTEM_PYTHON}"
   if ! "${gdown_py}" -c "import gdown" >/dev/null 2>&1; then
-    die "既没有 FS_CKPT_URL,也没有可用的 gdown。请先 'bash robosyn_hybrid/scripts/setup_fs_env.sh venv',或设置 FS_CKPT_URL,或手动把 model_best_bp2.pth(与其 cfg.yaml)放到 ${FS_CKPT_PATH}"
+    die "既没有 FS_CKPT_URL,也没有可用的 gdown。请先 'bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh venv',或设置 FS_CKPT_URL,或手动把 model_best_bp2.pth(与其 cfg.yaml)放到 ${FS_CKPT_PATH}"
   fi
 
   local stage="${ASSETS_DIR}/weights-stage"
@@ -175,7 +176,7 @@ cmd_weights() {
 
 cmd_serve() {
   [ -f "${FS_INFER_SCRIPT}" ] || die "找不到 ${FS_INFER_SCRIPT}"
-  [ -x "${VENV_PYTHON}" ] || die "venv 不存在,请先运行: bash robosyn_hybrid/scripts/setup_fs_env.sh venv"
+  [ -x "${VENV_PYTHON}" ] || die "venv 不存在,请先运行: bash policy/hybrid/robosyn_hybrid/scripts/setup_fs_env.sh venv"
   if [ -n "${FS_SOCKET_PATH}" ]; then
     log "启动常驻 worker,socket=${FS_SOCKET_PATH}"
   else

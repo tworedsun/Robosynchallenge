@@ -14,8 +14,8 @@ run.  It answers four questions:
 Exit code 0 means "no blocker found"; 1 means at least one check failed.
 
 USAGE
-    python robosyn_hybrid/scripts/smoke_imports.py
-    python robosyn_hybrid/scripts/smoke_imports.py --strict   # missing assets fail
+    python policy/hybrid/robosyn_hybrid/scripts/smoke_imports.py
+    python policy/hybrid/robosyn_hybrid/scripts/smoke_imports.py --strict   # missing assets fail
 """
 
 from __future__ import annotations
@@ -24,9 +24,12 @@ import argparse
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+# <repo>/policy/hybrid/robosyn_hybrid/scripts/smoke_imports.py
+REPO_ROOT = Path(__file__).resolve().parents[4]
+HYBRID_PARENT = Path(__file__).resolve().parents[2]   # <repo>/policy/hybrid
+for _candidate in (str(REPO_ROOT), str(HYBRID_PARENT)):
+    if _candidate not in sys.path:
+        sys.path.insert(0, _candidate)
 
 FAILURES: list[str] = []
 WARNINGS: list[str] = []

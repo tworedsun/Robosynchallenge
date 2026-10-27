@@ -16,7 +16,7 @@ link_names=["<arm>_link6"], to_matrix=True)`` 到底返回哪个帧"的开关:
 
 该常量是 2026-10-10 在真实 RTX 4090 + ``EmbodiChain_main 0.2.4`` 检出上
 实测解出的(残差 1.277e-06),不是推测值;换检出后请用
-``robosyn_hybrid/scripts/verify_clickbell_geometry.py`` 的 L1 层重测。
+``policy/hybrid/robosyn_hybrid/scripts/verify_clickbell_geometry.py`` 的 L1 层重测。
 """
 
 from __future__ import annotations
@@ -45,8 +45,8 @@ def repo_root() -> Path:
     env = os.environ.get("ROBOSYN_REPO_ROOT")
     if env:
         return Path(env).expanduser().resolve()
-    # <repo>/robosyn_hybrid/settings.py -> <repo>
-    return _PKG_DIR.parent
+    # <repo>/policy/hybrid/robosyn_hybrid/settings.py -> <repo>
+    return _PKG_DIR.parents[2]
 
 
 def _env_path(name: str, default: Path) -> Path:
@@ -185,7 +185,7 @@ def asset(name: str, *, required: bool = True) -> Path:
         return path
     message = (
         f"Required asset '{name}' not found at {path}. "
-        "Run `bash robosyn_hybrid/scripts/download_assets.sh` first, or set ROBOSYN_HYBRID_ASSETS "
+        "Run `bash policy/hybrid/robosyn_hybrid/scripts/download_assets.sh` first, or set ROBOSYN_HYBRID_ASSETS "
         "to the directory that holds the downloaded weights."
     )
     if required:

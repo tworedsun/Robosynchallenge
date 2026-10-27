@@ -59,7 +59,7 @@ hybrid_act_chunks: 6
 hybrid_act_step: 50
 # local ACT checkpoint directory; null means eval.sh fills it in from the
 # HYBRID_CKPT environment variable. When no path is supplied the adapter
-# resolves the task through robosyn_hybrid/registry.py (pinned revisions):
+# resolves the task through policy/hybrid/robosyn_hybrid/registry.py (pinned revisions):
 #   handle_basket: its migrated weights are hosted at dimofu/ACT_sim_handle_basket.
 #   click_bell / items_handover: the hybrid flows reuse the official released
 #                  checkpoints RoboSynChallenge/ACT_sim_<task> for their ACT

@@ -1,6 +1,6 @@
 # FoundationStereo 推理 venv 的最小依赖(WS-A / fs_infer.py)
 #
-# 这个 venv 只给 `robosyn_hybrid/fs_infer.py` 用(单次推理 + `--serve` 常驻
+# 这个 venv 只给 `policy/hybrid/robosyn_hybrid/fs_infer.py` 用(单次推理 + `--serve` 常驻
 # worker),刻意不含 open3d / jupyter / 训练相关依赖,尽可能轻。
 #
 # 版本取自 FoundationStereo 官方的 environment.yml(python 3.11 环境)。
